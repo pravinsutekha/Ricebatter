@@ -156,64 +156,60 @@
   }
 
   function handleSubmit() {
-    const form = document.getElementById("orderForm");
-    const button = form.querySelector("button");
-    if (!form.reportValidity()) return;
+  const form = document.getElementById("orderForm");
+  const button = form.querySelector("button");
+  if (!form.reportValidity()) return;
 
-    button.disabled = true;
-    button.textContent = "Processing...";
+  button.disabled = true;
+  button.textContent = "Processing...";
 
-    const name = form.name.value.trim();
-    const phone = form.phone.value.trim();
-    const address = form.address.value.trim();
-    const pincode = form.pincode.value;
-    const quantity = form.quantity.value;
-    const day = form.delivery_day.value;
-    const method = form.payment_method.value;
-    const amount = totalSpan.textContent;
+  const name = form.name.value.trim();
+  const phone = form.phone.value.trim();
+  const address = form.address.value.trim();
+  const pincode = form.pincode.value;
+  const quantity = form.quantity.value;
+  const day = form.delivery_day.value;
+  const method = form.payment_method.value;
+  const amount = totalSpan.textContent;
 
-    const payload = {
-      name,
-      phone,
-      address,
-      pincode,
-      quantity,
-      day,
-      method,
-      amount
-    };
+  const payload = {
+    name,
+    phone,
+    address,
+    pincode,
+    quantity,
+    day,
+    method,
+    amount
+  };
 
-    fetch("https://script.google.com/macros/s/AKfycbx2hrZ1yx21JGdT2n4dRdvz9KLDj_l3FH51tY9WFWTcJ0RZdC-5osupLWZysaXEY5ow5A/exec", {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }).then(() => {
-      if (method === "UPI") {
-        const upiLink = `upi://pay?pa=9529748242@upi&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
-        window.location.href = upiLink;
-        setTimeout(() => {
-          showPopup(name, amount);
-          form.reset();
-          totalSpan.textContent = "0";
-          button.disabled = false;
-          button.textContent = "Pay Now";
-        }, 5000);
-      } else {
-        showPopup(name, amount);
-        form.reset();
-        totalSpan.textContent = "0";
-        button.disabled = false;
-        button.textContent = "Pay Now";
-      }
-    }).catch(err => {
-      alert("Error submitting order. Please try again.");
-      console.error(err);
-      button.disabled = false;
-      button.textContent = "Pay Now";
-    });
-  }
+  fetch("https://script.google.com/macros/s/AKfycbx2hrZ1yx21JGdT2n4dRdvz9KLDj_l3FH51tY9WFWTcJ0RZdC-5osupLWZysaXEY5ow5A/exec", {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }).then(() => {
+    if (method === "UPI") {
+      const upiLink = `upi://pay?pa=9529748242@upi&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
+      window.open(upiLink, '_blank'); // ← FIXED HERE
+      showPopup(name, amount);
+    } else {
+      showPopup(name, amount);
+    }
+
+    form.reset();
+    totalSpan.textContent = "0";
+    button.disabled = false;
+    button.textContent = "Pay Now";
+  }).catch(err => {
+    alert("Error submitting order. Please try again.");
+    console.error(err);
+    button.disabled = false;
+    button.textContent = "Pay Now";
+  });
+}
+
 
   function showPopup(name, amount) {
     const msg = `Hi ${name}, your order is confirmed.\nTotal: ₹${amount}`;
