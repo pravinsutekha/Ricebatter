@@ -6,8 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { font-family: Arial; background: #f9f9f9; padding: 20px; display: flex; justify-content: center; }
-    .form-step { display: none; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-    .form-step.active { display: block; }
+    .form-step { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
     input, select, textarea, button { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc; }
     button { background: #2b7a78; color: white; font-size: 16px; cursor: pointer; }
     .total-box { background: #e6f9f1; padding: 10px; font-weight: bold; border-radius: 5px; text-align: center; }
@@ -17,7 +16,7 @@
 </head>
 <body>
 
-<form id="formStep1" class="form-step active">
+<form id="orderForm" class="form-step">
   <h2>Order Idli Batter</h2>
   <input type="text" id="name" placeholder="Name" required>
   <input type="tel" id="phone" placeholder="Phone (10 digits)" required pattern="[0-9]{10}">
@@ -38,19 +37,8 @@
     <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
     <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
   </select>
-  <select id="payment_method" required>
-    <option value="">Select Payment</option>
-    <option value="UPI">UPI</option>
-    <option value="COD">Cash on Delivery</option>
-  </select>
   <div class="total-box">Total: ₹<span id="total">0</span></div>
-  <button type="button" onclick="submitOrder()">Next</button>
-</form>
-
-<form id="formStep2" class="form-step">
-  <h2>Complete Payment</h2>
-  <p>Click below to pay via UPI</p>
-  <button type="button" onclick="payUPI()">Pay Now</button>
+  <button type="button" onclick="submitOrder()">Submit</button>
 </form>
 
 <div class="modal" id="confirmationModal">
@@ -62,7 +50,6 @@
 
 <script>
   const totalSpan = document.getElementById("total");
-  let upiName = "", upiAmount = "";
 
   function calculateTotal() {
     const val = document.getElementById("quantity").value;
@@ -70,8 +57,8 @@
   }
 
   function submitOrder() {
-    const f = document.getElementById("formStep1");
-    if (!f.reportValidity()) return;
+    const form = document.getElementById("orderForm");
+    if (!form.reportValidity()) return;
 
     const name = document.getElementById("name").value.trim();
     const phone = document.getElementById("phone").value.trim();
@@ -79,54 +66,31 @@
     const pincode = document.getElementById("pincode").value;
     const quantity = document.getElementById("quantity").value;
     const day = document.getElementById("delivery_day").value;
-    const method = document.getElementById("payment_method").value;
     const amount = totalSpan.textContent;
 
-    upiName = name;
-    upiAmount = amount;
-
-    const payload = { name, phone, address, pincode, quantity, day, method, amount };
+    const payload = { name, phone, address, pincode, quantity, day, amount };
 
     fetch("https://script.google.com/macros/s/AKfycbxHKyyas5Zbqeh8ANTGL6NFz8mdzWDn6_iOqSBXUrtm/dev", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ data: payload })
     }).then(() => {
-      if (method === "UPI") {
-        document.getElementById("formStep1").classList.remove("active");
-        document.getElementById("formStep2").classList.add("active");
-      } else {
-        showPopup(name, amount);
-        resetForms();
-      }
+      showPopup(name, amount);
+      form.reset();
+      totalSpan.textContent = "0";
     }).catch(() => {
       alert("Error submitting order.");
     });
   }
 
-  function payUPI() {
-    const upiLink = `upi://pay?pa=9529748242@upi&pn=${encodeURIComponent(upiName)}&am=${upiAmount}&cu=INR`;
-    window.location.href = upiLink;
-    setTimeout(() => {
-      showPopup(upiName, upiAmount);
-      resetForms();
-    }, 5000);
-  }
-
   function showPopup(name, amount) {
-    document.getElementById("modalMessage").innerText = `Hi ${name}, your order for ₹${amount} is confirmed.`;
+    const message = `Hi ${name}, your order for ₹${amount} is confirmed.\n\nTo pay now, select your quantity and pay below.`;
+    document.getElementById("modalMessage").innerText = message;
     document.getElementById("confirmationModal").style.display = "flex";
   }
 
   function closeModal() {
     document.getElementById("confirmationModal").style.display = "none";
-  }
-
-  function resetForms() {
-    document.getElementById("formStep1").reset();
-    document.getElementById("formStep1").classList.add("active");
-    document.getElementById("formStep2").classList.remove("active");
-    totalSpan.textContent = "0";
   }
 </script>
 
