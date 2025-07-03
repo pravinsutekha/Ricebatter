@@ -3,171 +3,76 @@
 <head>
   <title>Idli Batter Order</title>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      font-family: Arial;
-      background: #f9f9f9;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-    .form-step {
-      display: none;
-      width: 100%;
-      max-width: 500px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .form-step.active {
-      display: block;
-    }
-    h2 {
-      text-align: center;
-      color: #2b7a78;
-    }
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
-    }
-    input, select, textarea, button {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    button {
-      background: #2b7a78;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #1e5c5a;
-    }
-    .total-box {
-      background: #e6f9f1;
-      padding: 10px;
-      font-weight: bold;
-      border-radius: 5px;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 99;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background-color: rgba(0,0,0,0.5);
-    }
-    .modal-content {
-      background-color: #fff;
-      margin: 15% auto;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-    }
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 24px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .close:hover {
-      color: #000;
-    }
+    body { font-family: Arial; background: #f9f9f9; padding: 20px; display: flex; justify-content: center; }
+    .form-step { display: none; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+    .form-step.active { display: block; }
+    input, select, textarea, button { width: 100%; padding: 10px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ccc; }
+    button { background: #2b7a78; color: white; font-size: 16px; cursor: pointer; }
+    .total-box { background: #e6f9f1; padding: 10px; font-weight: bold; border-radius: 5px; text-align: center; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+    .modal-content { background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; }
   </style>
 </head>
 <body>
 
-<!-- Step 1: Customer Info -->
 <form id="formStep1" class="form-step active">
   <h2>Order Idli Batter</h2>
-
-  <label for="name">Name</label>
-  <input type="text" id="name" required>
-
-  <label for="phone">Phone</label>
-  <input type="tel" id="phone" required pattern="[0-9]{10}">
-
-  <label for="address">Address</label>
-  <textarea id="address" required></textarea>
-
-  <label for="pincode">Delivery Pincode</label>
+  <input type="text" id="name" placeholder="Name" required>
+  <input type="tel" id="phone" placeholder="Phone (10 digits)" required pattern="[0-9]{10}">
+  <textarea id="address" placeholder="Address" required></textarea>
   <select id="pincode" required>
     <option value="">Select Pincode</option>
     <option value="411057">411057</option>
     <option value="411033">411033</option>
   </select>
-
-  <label for="quantity">Quantity</label>
-  <select id="quantity" required onchange="calculateTotal()">
-    <option value="">Select</option>
+  <select id="quantity" onchange="calculateTotal()" required>
+    <option value="">Select Quantity</option>
     <option value="500gm">500gm - ₹50</option>
-    <option value="1kg">1 kg - ₹75</option>
-    <option value="2kg">2 kg - ₹140</option>
+    <option value="1kg">1kg - ₹75</option>
+    <option value="2kg">2kg - ₹140</option>
   </select>
-
-  <label for="delivery_day">Delivery Day</label>
   <select id="delivery_day" required>
-    <option value="">Choose</option>
-    <option>Monday</option>
-    <option>Tuesday</option>
-    <option>Wednesday</option>
-    <option>Thursday</option>
-    <option>Friday</option>
-    <option>Saturday</option>
-    <option>Sunday</option>
+    <option value="">Select Delivery Day</option>
+    <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+    <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
   </select>
-
-  <label for="payment_method">Payment Method</label>
   <select id="payment_method" required>
-    <option value="">Select</option>
+    <option value="">Select Payment</option>
     <option value="UPI">UPI</option>
     <option value="COD">Cash on Delivery</option>
   </select>
-
-  <div class="total-box">Total Payment: ₹<span id="total">0</span></div>
-
+  <div class="total-box">Total: ₹<span id="total">0</span></div>
   <button type="button" onclick="submitOrder()">Next</button>
 </form>
 
-<!-- Step 2: Payment Step (only if UPI) -->
 <form id="formStep2" class="form-step">
   <h2>Complete Payment</h2>
-  <p>Click the button below to pay via UPI</p>
-  <button type="button" id="upiBtn">Pay via UPI</button>
+  <p>Click below to pay via UPI</p>
+  <button type="button" onclick="payUPI()">Pay Now</button>
 </form>
 
-<!-- Confirmation Modal -->
-<div id="confirmationModal" class="modal">
+<div class="modal" id="confirmationModal">
   <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
-    <p id="modalMessage">Your order is confirmed!</p>
+    <p id="modalMessage"></p>
+    <button onclick="closeModal()">OK</button>
   </div>
 </div>
 
 <script>
   const totalSpan = document.getElementById("total");
+  let upiName = "", upiAmount = "";
 
   function calculateTotal() {
-    const quantity = document.getElementById("quantity").value;
-    let total = 0;
-    if (quantity === "500gm") total = 50;
-    else if (quantity === "1kg") total = 75;
-    else if (quantity === "2kg") total = 140;
-    totalSpan.textContent = total;
+    const val = document.getElementById("quantity").value;
+    totalSpan.textContent = val === "500gm" ? "50" : val === "1kg" ? "75" : val === "2kg" ? "140" : "0";
   }
 
   function submitOrder() {
+    const f = document.getElementById("formStep1");
+    if (!f.reportValidity()) return;
+
     const name = document.getElementById("name").value.trim();
     const phone = document.getElementById("phone").value.trim();
     const address = document.getElementById("address").value.trim();
@@ -177,57 +82,40 @@
     const method = document.getElementById("payment_method").value;
     const amount = totalSpan.textContent;
 
-    const payload = {
-      name, phone, address, pincode, quantity, day, method, amount
-    };
+    upiName = name;
+    upiAmount = amount;
 
-    fetch("https://sheetdb.io/api/v1/abc123xyz", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    data: {
-      name,
-      phone,
-      address,
-      pincode,
-      quantity,
-      day,
-      method,
-      amount
-    }
-  })
-})
+    const payload = { name, phone, address, pincode, quantity, day, method, amount };
 
+    fetch("https://sheetdb.io/api/v1/sjxoqb392p6xs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: payload })
     }).then(() => {
       if (method === "UPI") {
         document.getElementById("formStep1").classList.remove("active");
         document.getElementById("formStep2").classList.add("active");
-
-        document.getElementById("upiBtn").onclick = function() {
-          const upiLink = `upi://pay?pa=9529748242@upi&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
-          window.location.href = upiLink;
-          setTimeout(() => {
-            showPopup(name, amount);
-            resetForms();
-          }, 5000);
-        };
-
       } else {
         showPopup(name, amount);
         resetForms();
       }
-    }).catch(err => {
-      alert("Error submitting order. Please try again.");
-      console.error(err);
+    }).catch(() => {
+      alert("Error submitting order.");
     });
   }
 
+  function payUPI() {
+    const upiLink = `upi://pay?pa=9529748242@upi&pn=${encodeURIComponent(upiName)}&am=${upiAmount}&cu=INR`;
+    window.location.href = upiLink;
+    setTimeout(() => {
+      showPopup(upiName, upiAmount);
+      resetForms();
+    }, 5000);
+  }
+
   function showPopup(name, amount) {
-    const msg = `Hi ${name}, your order is confirmed.\nTotal: ₹${amount}`;
-    document.getElementById("modalMessage").innerText = msg;
-    document.getElementById("confirmationModal").style.display = "block";
+    document.getElementById("modalMessage").innerText = `Hi ${name}, your order for ₹${amount} is confirmed.`;
+    document.getElementById("confirmationModal").style.display = "flex";
   }
 
   function closeModal() {
@@ -240,11 +128,6 @@
     document.getElementById("formStep2").classList.remove("active");
     totalSpan.textContent = "0";
   }
-
-  window.onclick = function(event) {
-    const modal = document.getElementById("confirmationModal");
-    if (event.target === modal) modal.style.display = "none";
-  };
 </script>
 
 </body>
