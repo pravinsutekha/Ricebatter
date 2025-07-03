@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -156,70 +157,71 @@
   }
 
   function handleSubmit() {
-  const form = document.getElementById("orderForm");
-  const button = form.querySelector("button");
-  if (!form.reportValidity()) return;
+    const form = document.getElementById("orderForm");
+    const button = form.querySelector("button");
+    if (!form.reportValidity()) return;
 
-  button.disabled = true;
-  button.textContent = "Processing...";
+    button.disabled = true;
+    button.textContent = "Processing...";
 
-  const name = form.name.value.trim();
-  const phone = form.phone.value.trim();
-  const address = form.address.value.trim();
-  const pincode = form.pincode.value;
-  const quantity = form.quantity.value;
-  const day = form.delivery_day.value;
-  const method = form.payment_method.value;
-  const amount = totalSpan.textContent;
+    const name = form.name.value.trim();
+    const phone = form.phone.value.trim();
+    const address = form.address.value.trim();
+    const pincode = form.pincode.value;
+    const quantity = form.quantity.value;
+    const day = form.delivery_day.value;
+    const method = form.payment_method.value;
+    const amount = totalSpan.textContent;
 
-  const payload = {
-    name,
-    phone,
-    address,
-    pincode,
-    quantity,
-    day,
-    method,
-    amount
-  };
+    const payload = {
+      name,
+      phone,
+      address,
+      pincode,
+      quantity,
+      day,
+      method,
+      amount
+    };
 
-  fetch("https://script.google.com/macros/s/AKfycbx2hrZ1yx21JGdT2n4dRdvz9KLDj_l3FH51tY9WFWTcJ0RZdC-5osupLWZysaXEY5ow5A/exec", {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }).then(() => {
-    if (method === "UPI") {
-      const upiLink = `upi://pay?pa=9529748242@upi&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
-document.getElementById("modalMessage").innerHTML = `
-  Hi ${name}, your order is confirmed.<br>Total: ₹${amount}<br><br>
-  <a href="${upiLink}" style="color: white; background: #2b7a78; padding: 10px 20px; display: inline-block; border-radius: 5px;" target="_blank">
-    Pay Now via UPI
-  </a>
-`;
-document.getElementById("confirmationModal").style.display = "block";
+    fetch("https://script.google.com/macros/s/AKfycbx2hrZ1yx21JGdT2n4dRdvz9KLDj_l3FH51tY9WFWTcJ0RZdC-5osupLWZysaXEY5ow5A/exec", {
+      method: "POST",
+      body: JSON.stringify(payload),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(() => {
+      if (method === "UPI") {
+        const upiLink = `upi://pay?pa=9529748242@upi&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
+        document.getElementById("modalMessage").innerHTML = `
+          Hi ${name}, your order is confirmed.<br>Total: ₹${amount}<br><br>
+          <a href="${upiLink}" style="text-decoration: none;" target="_blank">
+            <button style="background: #2b7a78; color: white; padding: 10px 20px; border-radius: 6px; border: none; font-size: 16px; cursor: pointer;">
+              Pay Now via UPI
+            </button>
+          </a>
+          <p style="margin-top: 10px;">If UPI doesn’t open, click again or pay manually from your UPI app.</p>
+        `;
+        document.getElementById("confirmationModal").style.display = "block";
+      } else {
+        showPopup(name, amount);
+      }
 
-      showPopup(name, amount);
-    } else {
-      showPopup(name, amount);
-    }
-
-    form.reset();
-    totalSpan.textContent = "0";
-    button.disabled = false;
-    button.textContent = "Pay Now";
-  }).catch(err => {
-    alert("Error submitting order. Please try again.");
-    console.error(err);
-    button.disabled = false;
-    button.textContent = "Pay Now";
-  });
-}
-
+      form.reset();
+      totalSpan.textContent = "0";
+      button.disabled = false;
+      button.textContent = "Pay Now";
+    }).catch(err => {
+      alert("Error submitting order. Please try again.");
+      console.error(err);
+      button.disabled = false;
+      button.textContent = "Pay Now";
+    });
+  }
 
   function showPopup(name, amount) {
-    const msg = `Hi ${name}, your order is confirmed.\nTotal: ₹${amount}`;
+    const msg = `Hi ${name}, your order is confirmed.
+Total: ₹${amount}`;
     document.getElementById("modalMessage").innerText = msg;
     document.getElementById("confirmationModal").style.display = "block";
   }
