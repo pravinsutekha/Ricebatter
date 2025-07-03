@@ -192,7 +192,14 @@
   }).then(() => {
     if (method === "UPI") {
       const upiLink = `upi://pay?pa=9529748242@upi&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
-      window.open(upiLink, '_blank'); // ← FIXED HERE
+document.getElementById("modalMessage").innerHTML = `
+  Hi ${name}, your order is confirmed.<br>Total: ₹${amount}<br><br>
+  <a href="${upiLink}" style="color: white; background: #2b7a78; padding: 10px 20px; display: inline-block; border-radius: 5px;" target="_blank">
+    Pay Now via UPI
+  </a>
+`;
+document.getElementById("confirmationModal").style.display = "block";
+
       showPopup(name, amount);
     } else {
       showPopup(name, amount);
