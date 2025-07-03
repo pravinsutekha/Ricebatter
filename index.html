@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,13 +11,17 @@
       justify-content: center;
       padding: 20px;
     }
-    form {
+    .form-step {
+      display: none;
       width: 100%;
       max-width: 500px;
       background: #fff;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .form-step.active {
+      display: block;
     }
     h2 {
       text-align: center;
@@ -85,27 +88,28 @@
 </head>
 <body>
 
-<form id="orderForm">
+<!-- Step 1: Customer Info -->
+<form id="formStep1" class="form-step active">
   <h2>Order Idli Batter</h2>
 
   <label for="name">Name</label>
-  <input type="text" id="name" name="name" required>
+  <input type="text" id="name" required>
 
   <label for="phone">Phone</label>
-  <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}">
+  <input type="tel" id="phone" required pattern="[0-9]{10}">
 
   <label for="address">Address</label>
-  <textarea id="address" name="address" required></textarea>
+  <textarea id="address" required></textarea>
 
   <label for="pincode">Delivery Pincode</label>
-  <select id="pincode" name="pincode" required>
+  <select id="pincode" required>
     <option value="">Select Pincode</option>
     <option value="411057">411057</option>
     <option value="411033">411033</option>
   </select>
 
   <label for="quantity">Quantity</label>
-  <select name="quantity" id="quantity" required onchange="calculateTotal()">
+  <select id="quantity" required onchange="calculateTotal()">
     <option value="">Select</option>
     <option value="500gm">500gm - ₹50</option>
     <option value="1kg">1 kg - ₹75</option>
@@ -113,7 +117,7 @@
   </select>
 
   <label for="delivery_day">Delivery Day</label>
-  <select name="delivery_day" id="delivery_day" required>
+  <select id="delivery_day" required>
     <option value="">Choose</option>
     <option>Monday</option>
     <option>Tuesday</option>
@@ -125,7 +129,7 @@
   </select>
 
   <label for="payment_method">Payment Method</label>
-  <select name="payment_method" id="payment_method" required>
+  <select id="payment_method" required>
     <option value="">Select</option>
     <option value="UPI">UPI</option>
     <option value="COD">Cash on Delivery</option>
@@ -133,7 +137,14 @@
 
   <div class="total-box">Total Payment: ₹<span id="total">0</span></div>
 
-  <button type="button" onclick="handleSubmit()">Pay Now</button>
+  <button type="button" onclick="goToStep2()">Next</button>
+</form>
+
+<!-- Step 2: Payment Step (only if UPI) -->
+<form id="formStep2" class="form-step">
+  <h2>Complete Payment</h2>
+  <p>Click the button below to pay via UPI</p>
+  <button type="button" onclick="submitOrder()">Pay via UPI</button>
 </form>
 
 <!-- Confirmation Modal -->
@@ -156,21 +167,27 @@
     totalSpan.textContent = total;
   }
 
-  function handleSubmit() {
-    const form = document.getElementById("orderForm");
-    const button = form.querySelector("button");
+  function goToStep2() {
+    const form = document.getElementById("formStep1");
     if (!form.reportValidity()) return;
 
-    button.disabled = true;
-    button.textContent = "Processing...";
+    const method = document.getElementById("payment_method").value;
+    if (method === "COD") {
+      submitOrder(); // No payment page
+    } else {
+      document.getElementById("formStep1").classList.remove("active");
+      document.getElementById("formStep2").classList.add("active");
+    }
+  }
 
-    const name = form.name.value.trim();
-    const phone = form.phone.value.trim();
-    const address = form.address.value.trim();
-    const pincode = form.pincode.value;
-    const quantity = form.quantity.value;
-    const day = form.delivery_day.value;
-    const method = form.payment_method.value;
+  function submitOrder() {
+    const name = document.getElementById("name").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const pincode = document.getElementById("pincode").value;
+    const quantity = document.getElementById("quantity").value;
+    const day = document.getElementById("delivery_day").value;
+    const method = document.getElementById("payment_method").value;
     const amount = totalSpan.textContent;
 
     const payload = {
@@ -193,35 +210,23 @@
     }).then(() => {
       if (method === "UPI") {
         const upiLink = `upi://pay?pa=9529748242@upi&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR`;
-        document.getElementById("modalMessage").innerHTML = `
-          Hi ${name}, your order is confirmed.<br>Total: ₹${amount}<br><br>
-          <a href="${upiLink}" style="text-decoration: none;" target="_blank">
-            <button style="background: #2b7a78; color: white; padding: 10px 20px; border-radius: 6px; border: none; font-size: 16px; cursor: pointer;">
-              Pay Now via UPI
-            </button>
-          </a>
-          <p style="margin-top: 10px;">If UPI doesn’t open, click again or pay manually from your UPI app.</p>
-        `;
-        document.getElementById("confirmationModal").style.display = "block";
+        window.location.href = upiLink;
+        setTimeout(() => {
+          showPopup(name, amount);
+          resetForms();
+        }, 5000);
       } else {
         showPopup(name, amount);
+        resetForms();
       }
-
-      form.reset();
-      totalSpan.textContent = "0";
-      button.disabled = false;
-      button.textContent = "Pay Now";
     }).catch(err => {
       alert("Error submitting order. Please try again.");
       console.error(err);
-      button.disabled = false;
-      button.textContent = "Pay Now";
     });
   }
 
   function showPopup(name, amount) {
-    const msg = `Hi ${name}, your order is confirmed.
-Total: ₹${amount}`;
+    const msg = `Hi ${name}, your order is confirmed.\nTotal: ₹${amount}`;
     document.getElementById("modalMessage").innerText = msg;
     document.getElementById("confirmationModal").style.display = "block";
   }
@@ -230,10 +235,17 @@ Total: ₹${amount}`;
     document.getElementById("confirmationModal").style.display = "none";
   }
 
+  function resetForms() {
+    document.getElementById("formStep1").reset();
+    document.getElementById("formStep1").classList.add("active");
+    document.getElementById("formStep2").classList.remove("active");
+    totalSpan.textContent = "0";
+  }
+
   window.onclick = function(event) {
     const modal = document.getElementById("confirmationModal");
     if (event.target === modal) modal.style.display = "none";
-  }
+  };
 </script>
 
 </body>
